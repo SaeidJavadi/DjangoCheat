@@ -95,7 +95,7 @@ Other commands
 # Add app to settings.py
 INSTALLED_APPS = [
          … ,
-         'app_name',
+         'app_name.apps.App_nameConfig',
  ]
 
 # App templates folder
@@ -139,7 +139,6 @@ DATABASE = {
         'PORT': '5432'
         }
     }
-
 
 TIME_INPUT_FORMATS = [
     '%H:%M:%S',     # '14:30:59'
@@ -207,7 +206,7 @@ class Customer(models.Model)
 
     class Meta:
         verbose_name = "Customer"
-        verbose_name_plural = "Customer's"
+        verbose_name_plural = "Customers"
 
     def __str__(self):   # Model string representation
         return self.name
@@ -475,7 +474,7 @@ Use static in template:
 <small>For example, if your custom tags/filters are in a file called `basetags.py`, your app layout might look like this:</small>
 
 ```
-polls/
+app_name/
 └─── templatetags/
      └─── basetags.py
     __init__.py
@@ -529,7 +528,7 @@ def lower(value): # Only one argument.
 <small>1. Anywhere, create a context_processors.py file</small>
 
 ```
-YourDjangoProject
+project_name
 └───app_name
     ├───...
     └───context_processors.pyy
@@ -890,6 +889,331 @@ def logout_page(request):
 ```python
 # set_password will hash the password
 user.set_password('raw password')
+```
+
+## Create Custom Accounts Model
+
+```python
+~$ python manage.py startapp accounts
+```
+
+```python
+# Add accounts app to settings.py
+INSTALLED_APPS = [ … ,
+         'accounts.apps.AccountsConfi', ]
+.
+.
+.
+AUTH_USER_MODEL = 'accounts.User'
+```
+
+```python
+# accounts/models.py
+from django.db import models
+from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
+
+
+class UserManager(BaseUserManager):
+    def create_user(self, username, email, password=None, **extra_fields):
+        if not username:
+            raise ValueError('Users must have an username')
+        if not email:
+            raise ValueError('Users must have an email')
+
+        user = self.model(email=email, **extra_fields)
+        user.set_password(password)
+        user.save(using=self._db)
+        return user
+
+    def create_superuser(self, username,  email, password=None, **extra_fields):
+        extra_fields.setdefault('is_staff', True)
+        extra_fields.setdefault('is_superuser', True)
+        extra_fields.setdefault('is_active', True)
+
+        user = self.create_user(email, password=password, **extra_fields)
+        user.save(using=self._db)
+        return user
+
+
+class User(AbstractBaseUser, PermissionsMixin):
+    username = models.CharField(verbose_name='Username', max_length=255, unique=True)
+    email = models.EmailField(verbose_name='username', 'email', max_length=255, unique=True)
+    phone = models.BigIntegerField(verbose_name='Phone Number', unique=True, blank=True, null=True)
+    is_active = models.BooleanField(default=True, verbose_name="is_active")
+    is_staff = models.BooleanField(default=False, verbose_name="is_staff")
+    is_superuser = models.BooleanField(default=False, verbose_name="is_superuser")
+
+    objects = UserManager()
+
+    USERNAME_FIELD = 'username'
+    REQUIRED_FIELDS = ['username','email']
+
+    def __str__(self):
+        return self.username
+
+    class Meta:
+        verbose_name = "User"
+        verbose_name_plural = "Users"
+```
+
+```python
+# accounts/forms.py
+from django import forms
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.core.exceptions import ValidationError
+from accounts.models import User
+from django.utils.translation import gettext_lazy as _
+
+
+class UserCreationForm(forms.ModelForm):
+    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'phone', 'is_active', 'is_staff')
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Passwords don't match")
+        return password2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+
+
+class UserChangeForm(forms.ModelForm):
+    password = ReadOnlyPasswordHashField()
+
+    class Meta:
+        model = User
+        fields = ('username', 'phone', 'username', 'email', 'is_active', 'is_staff')
+
+    def clean_password(self):
+        return self.initial["password"]
+
+
+class LoginForm(forms.Form):
+    email = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Email'}), label='Email')
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Password'}),label='Password')
+
+
+class RegisterForm(forms.ModelForm):
+    password1 = forms.CharField(label='Password', widget=forms.PasswordInput(
+        attrs={'class': 'form-control'}))
+    password2 = forms.CharField(label='Password confirmation',
+                                widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+
+    class Meta:
+        model = User
+        fields = ('username', 'phone', 'email')
+
+        widgets = {  # Optional
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'phone': forms.NumberInput(
+                attrs={'class': 'form-control', 'type': 'tel', 'maxlength': '11',
+                       'minlength': '11',  'onkeypress': 'return isNumber(event)', 'required': 'false'})}
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Passwords don't match")
+        else:
+            return password2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+
+class EditProfileForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ('username', 'username', 'email', 'phone',)
+
+
+class ChangePassword(forms.Form):
+    password1 = forms.CharField(label=_('Password'), widget=forms.PasswordInput(
+        attrs={'class': 'form-control', 'placeholder': 'Password'}))
+    password2 = forms.CharField(label=_('Password confirmation'),
+                                widget=forms.PasswordInput(
+                                    attrs={'class': 'form-control', 'placeholder': 'Re-Enter Password'}))
+
+    def clean_password2(self):
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Passwords don't match")
+        else:
+            return password2
+```
+
+```python
+# accounts/admin.py
+from django import forms
+from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as BaseUserAdmin
+from django.contrib.auth.forms import ReadOnlyPasswordHashField
+from django.core.exceptions import ValidationError
+from django.contrib.auth.models import Group
+from accounts.models import User
+
+
+class UserCreationForm(forms.ModelForm):
+    password1 = forms.CharField(label='Password', widget=forms.PasswordInput)
+    password2 = forms.CharField(label='Password confirmation', widget=forms.PasswordInput)
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'phone')
+
+    def clean_password2(self):
+        # Check that the two password entries match
+        password1 = self.cleaned_data.get("password1")
+        password2 = self.cleaned_data.get("password2")
+        if password1 and password2 and password1 != password2:
+            raise ValidationError("Passwords don't match")
+        return password2
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        user.set_password(self.cleaned_data["password1"])
+        if commit:
+            user.save()
+        return user
+
+
+class UserChangeForm(forms.ModelForm):
+    password = ReadOnlyPasswordHashField()
+
+    class Meta:
+        model = User
+        fields = ('username', 'email', 'phone', 'password', 'is_active', 'is_staff')
+
+
+class UserAdmin(BaseUserAdmin):
+    form = UserChangeForm
+    add_form = UserCreationForm
+    list_display = ('username', 'email', 'is_active', 'is_staff', 'is_superuser')
+    list_editable = ('is_staff', 'is_active')
+    list_filter = ('is_staff', 'groups')
+    fieldsets = (
+        (None, {'fields': ( 'username', 'email', 'phone', 'password')}),
+        ('Permissions', {'fields': ('is_staff',)}),
+        ('Group Permissions', {
+            'fields': ('is_active', 'is_superuser', 'groups', 'user_permissions'),
+        })
+    )
+    add_fieldsets = (
+        (None, {
+            'classes': ('wide',),
+            'fields': ('username', 'email', 'phone', 'password1', 'password2'),
+        }),
+        ('Group Permissions', {
+            'fields': ('is_active', 'is_superuser', 'groups', 'user_permissions'),
+        })
+    )
+    search_fields = ('username', 'email', 'phone')
+    ordering = ('username', 'email', 'phone')
+    filter_horizontal = ('groups', 'user_permissions',)
+
+
+admin.site.register(User, UserAdmin)
+# unregister the Group model from admin.
+# admin.site.unregister(Group)
+```
+```python
+# accounts/urls.py
+from django.urls import path
+from accounts import views
+
+app_name = 'accounts'
+urlpatterns = [
+    path('login/', views.userLogin, name='login'),
+    path('register/', views.userRegister, name='register'),
+    path('logout/', views.LogoutPage, name='logout')
+]
+```
+```python
+# accounts/views.py
+from django.shortcuts import render, redirect
+from django.contrib.auth import login, logout, authenticate
+from django.contrib.auth.decorators import login_required
+from django.utils.translation import gettext_lazy as _
+from accounts.forms import LoginForm, RegisterForm
+from django.contrib import messages
+from accounts.models import User
+
+
+def userRegister(request):
+    form = RegisterForm()
+    if request.method == 'POST':
+        form = RegisterForm(request.POST)
+        if form.is_valid():
+            cd = form.cleaned_data
+            if not User.objects.filter(email=cd['username']).exists():
+                if not User.objects.filter(email=cd['email']).exists():
+                    user = User.objects.create_user(
+                        username=cd['username'], phone=cd['phone'], email=cd['email'], password=cd['password1'])
+                    user.save()
+                    login(request, user)
+                    messages.success(request, _("You successfully registered a user"), extra_tags="success")
+                    return redirect('app_name:home')
+                else:
+                    messages.error(request, _("This Email is exists"), extra_tags="warning")
+            else:
+                messages.error(request, _("This Username is exists"), extra_tags="warning")
+        else:
+            import json
+            er = json.loads(form.errors.as_json())
+            for e in er:
+                messages.error(request, er[e][0]['message'], 'warning')
+    return render(request, 'accounts/register.html', {'form': form})
+
+
+def userLogin(request):
+    if not request.user.is_active:
+        if request.method == 'POST':
+            form = LoginForm(request.POST)
+            if form.is_valid():
+                cd = form.cleaned_data
+                if User.objects.filter(username=cd['username']).exists():
+                    user = authenticate(request, username=cd['username'], password=cd['password'])
+                    if user is not None:
+                        login(request, user)
+                        messages.success(request, _("logged in successfully"), extra_tags="success")
+                        return redirect('app_name:home')
+                    else:
+                        messages.error(request, _("your username Or Password is wrong"), extra_tags="warning")
+                else:
+                    messages.error(request, _("No account created with this username"), extra_tags="warning")
+                    return redirect('accounts:login')
+            else:
+                messages.error(request, _("Please enter your information correctly"), extra_tags="warning")
+        else:
+            form = LoginForm()
+        return render(request, 'accounts/login.html', {'form': form})
+    else:
+        return redirect('app_name:home')
+
+
+@login_required()
+def LogoutPage(request):
+    logout(request)
+    messages.success(request, _("You Logged Out successfully"), extra_tags="success")
+    return redirect('app_name:home')
 ```
 
 #### Send Email
