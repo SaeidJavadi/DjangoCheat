@@ -651,11 +651,23 @@ class ArticleForm(forms.Form):
 
 # Model Form
 from django.forms import ModelForm
-from .models import Article
+from app_name.models import Article
 class ArticleForm(ModelForm):
     class Meta:
         model = Article
         fields = ['name', 'description', 'price'] # Use '__all__' for all fields
+        widgets = {
+            'name': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+        labels = {
+            'name': 'First Name',
+        }
+        error_messages = {
+            'name': {'required': 'This field is required',},
+            }
+        help_texts = {
+        'name': 'Enter Your First Name',
+        }
 
 
 # Render form in template
@@ -945,8 +957,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     objects = UserManager()
 
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['username','email']
+    # We can use any field for username
+    USERNAME_FIELD = 'username' # or 'email' or 'phone'
+    REQUIRED_FIELDS = ['username', 'email']
 
     def __str__(self):
         return self.username
@@ -993,7 +1006,7 @@ class UserChangeForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'phone', 'username', 'email', 'is_active', 'is_staff')
+        fields = ('username', 'email', 'phone', 'is_active', 'is_staff')
 
     def clean_password(self):
         return self.initial["password"]
@@ -1014,7 +1027,7 @@ class RegisterForm(forms.ModelForm):
 
     class Meta:
         model = User
-        fields = ('username', 'phone', 'email')
+        fields = ('username', 'email', 'phone')
 
         widgets = {  # Optional
             'username': forms.TextInput(attrs={'class': 'form-control'}),
@@ -1041,7 +1054,7 @@ class RegisterForm(forms.ModelForm):
 class EditProfileForm(forms.ModelForm):
     class Meta:
         model = User
-        fields = ('username', 'username', 'email', 'phone',)
+        fields = ('username', 'email', 'phone')
 
 
 class ChangePassword(forms.Form):
@@ -1134,6 +1147,7 @@ admin.site.register(User, UserAdmin)
 # unregister the Group model from admin.
 # admin.site.unregister(Group)
 ```
+
 ```python
 # accounts/urls.py
 from django.urls import path
@@ -1146,6 +1160,7 @@ urlpatterns = [
     path('logout/', views.LogoutPage, name='logout')
 ]
 ```
+
 ```python
 # accounts/views.py
 from django.shortcuts import render, redirect
