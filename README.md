@@ -1391,8 +1391,6 @@ __all__ = ('celery_app',)
 
 ##### Step 5: Add Redis as a Dependency in the Django Project:
 
-<small>Run the command:</small>
-
 ```python
 ~$ pip install redis
 ```
@@ -1485,7 +1483,9 @@ def adding(x, y):
 
 ```bash
 # Normal function call in python
-~$ my_first_task()  # add task to the celery with function call
+~$ my_first_task()
+
+# add task to the celery with function call
 ~$ my_first_task.delay()
 ```
 
