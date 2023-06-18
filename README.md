@@ -1520,8 +1520,8 @@ def test(request):
 from django.urls import path
 from app_name.views import index, test
 urlpatterns = [
-    path('celery-index/',index, name='celery_index_url'),
-    path('celery-test/',test, name='celery_test_url'),
+    path('celery-index/', index, name='celery_index_url'),
+    path('celery-test/', test, name='celery_test_url'),
 ]
 ```
 
