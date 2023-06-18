@@ -42,19 +42,19 @@
 ~$  python manage.py migrate
 ```
 
-Create superuser for authenficiation/admin panel
+#### Create superuser for authenficiation/admin panel
 
 ```python
 ~$  python manage.py createsuperuser
 ```
 
-Start server
+#### Start server
 
 ```python
 ~$  python manage.py runserver  => ex.  http://127.0.0.1:8000
 ```
 
-Requirements
+#### Requirements
 
 ```python
 # Create a requirements file that contain all your projet dependencies
@@ -64,7 +64,7 @@ Requirements
 ~$  pip install -r requirements.txt
 ```
 
-Other commands
+#### Other commands
 
 ```python
 # Django shell (Run projet code direclty)
@@ -220,9 +220,10 @@ class Customer(models.Model)
 
 ```python
 # One-to-Many: (use double quotes if the entity is not yet declare) ex. "Supplier"
-supplier = models.ForeignKey(Supplier, blank=True, null=True, on_delete=models.CASCADE)
+supplier = models.ForeignKey(Supplier, blank=True, null=True, on_delete=models.CASCADE,related_name="supplierother")
 
 # on_delete can be set to models.CASCADE, models.ST_DEFAULT or models.SET_NULL
+# The related_name attribute specifies the name of the reverse relation from the supplier model back to your model
 
 # Many-to-Many:
 tags = models.ManyToManyField(Tag, blank=True)
@@ -285,6 +286,7 @@ url patterns = [
     path('posts/<int:id>/', views.show, name='posts.show'),
     path('posts/<int:id>/edit/', views.edit, name='posts.edit'),
     path('posts/<int:id>/delete/', views.delete, name='posts.delete'),
+    path('posts/<int:id>/<int:state>/', views.status, name='posts.status'), # two arguments
 ]
 ```
 
@@ -356,6 +358,10 @@ def delete(request, id):
     post = Post.objects.get(id=id)
     post.delete()
     return redirect('/posts')
+
+def status(request, id, state):
+    post = Post.objects.get(id=id, state=state)
+    return redirect('appfolder/status.html', {'post': post})
 ```
 
 #### Class based Views
@@ -434,18 +440,21 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
 {% block content %}
 {% endblock %}
 
-{% include 'header.html' %}
+{% include 'partials/header.html' %}
+
 # include template with One or More Parameters
 {% include 'body.html' with key1=value1 key2=value2 %}
 
 {% if user.username = 'Mike' %}
     <p>Hello Admin</p>
+{% elif user.username = 'john' %}
+    <p>Hello John Doe</p>
 {% else %}
     <p>Hello User</p>
 {% endif %}
 
 {% for product in products %}
-  <p>Row number: {{ forloop.counter0 }}<p>
+  <p>product number: {{ forloop.counter0 }}<p>
   <p>The product name is {{ product }}<p>
 {% endfor %}
 
@@ -477,9 +486,9 @@ Use static in template:
 app_name/
 └─── templatetags/
      └─── basetags.py
-    __init__.py
-    models.py
-    views.py
+     __init__.py
+     models.py
+     views.py
 ```
 
 - And in your template you would use the following:
@@ -1326,4 +1335,290 @@ ALLOWED_HOST = 127.0.0.1
 import os
 SECRET_KEY = os.environ.get('SECRET_KEY')
 ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS')
+```
+
+## Asynchronous Task with Django Celery Redis
+
+<small>Celery is a distributed task queue that can collect, record, schedule, and perform tasks outside of your main program.</small>
+
+##### Step 1: Install Celery Using pip
+
+```python
+~$ pip install celery       # pip install celery[redis]
+```
+
+##### Step 2. Add celery.py File in Your Project Module
+
+```python
+# your_project/celery.py
+import os
+from celery import Celery
+
+os.environ.setdefault('DJANGO_SETTINGS_MODULE','your_project_name.settings')
+app = Celery('your_project_name')
+app.config_from_object('django.conf:settings', namespace='CELERY')
+app.autodiscover_tasks()
+
+@app.task(bind=True)
+def debug_task(self):
+    print(f'Request: {self.request!r}')
+```
+
+##### Step 3: Import the Celery App to Django
+
+<small>To ensure that the Celery app is loaded when Django starts, add the following code into the `__init__.py` file that sits on the project module beside on settings.py file.</small>
+
+```python
+# your_project/__init__.py
+from .celery import app as celery_app
+
+__all__ = ('celery_app',)
+```
+
+##### Step 4: Download and Run Redis as a Celery ‘broker’
+
+```python
+~$ redis-server
+```
+
+<small>You can test that Redis is working properly by typing this into your terminal:</small>
+
+```python
+~$ redis-cli ping
+```
+
+> <small>Redis should reply with PONG - try it!</small>
+
+##### Step 5: Add Redis as a Dependency in the Django Project:
+
+<small>Run the command:</small>
+
+```python
+~$ pip install redis
+```
+
+##### step 6: Celery Stuff Configure to the Django Settings File
+
+<small>Once Redis is up, add the following code to your settings.py file and use celery-result</small>
+
+```python
+~$ pip install django-celery-results
+```
+
+> This extension enables you to store Celery task results using the Django ORM.<br>
+> It defines a single model (`django_celery_results.models.TaskResult`) used to store task results, and you can query this database table like any other Django model.
+
+```python
+INSTALLED_APPS = [
+                … ,
+                'django_celery_results',
+                ]
+
+BROKER_URL = 'redis://localhost:6379'
+CELERY_RESULT_BACKEND = 'redis://localhost:6379'
+CELERY_ACCEPT_CONTENT = ['application/json']
+CELERY_TASK_SERIALIZER = 'json'
+CELERY_RESULT_SERIALIZER = 'json'
+CELERY_TIMEZONE = TIME_ZONE
+CELERY_RESULT_BACKEND = 'django-db'
+CELERY_CACHE_BACKEND = 'django-cache'
+
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.db.DatabaseCache',
+        'LOCATION': 'redis://localhost:6379/1',
+        "OPTIONS": {
+                    "CLIENT_CLASS": "django_redis.client.DefaultClient",
+        }
+    }
+}
+```
+
+##### That’s it! You should now be able to use Celery with Django
+
+<small>Test that the Celery worker is ready to receive tasks:</small>
+
+```python
+~$ celery -A your_project_name worker -l info
+```
+
+> The most important task is: Always run a worker is needed to execute the celery task<br>if any error throws from Redis like this:
+
+```python
+AttributeError: 'str' object has no attribute 'items'
+```
+
+- the solution is: you have to use Redis old version
+
+#### Add a New Task to the Celery Step by Step:
+
+##### Step 1: Add tasks.py File to Your Django App.
+
+```python
+# app_name/tasks.py
+from celery import shared_task
+from celery.decorators import task
+from time import sleep
+
+
+@task(name='my_first_task')
+def my_first_task(duration):
+    sleep(duration)
+    return('first_task_done')
+
+@shared_task
+def test_func():
+    for i in range(10):
+        print(i)
+    return 'End_OK'
+
+@shared_task
+def adding(x, y):
+    time.sleep(10)
+    result = x + y
+    return result
+```
+
+##### Step 2: Assign Task to the Celery.
+
+<small>You need to assign a task to the celery. To assign this task you need to call this function with something different. celery gives us two methods `delay()` and `apply_async()` to call task.</small>
+
+```bash
+# Normal function call in python
+~$ my_first_task()  # add task to the celery with function call
+~$ my_first_task.delay()
+```
+
+> you can send argument to the function using the delay method.
+> <small>To check celery on the action open a separate tab of the terminal then go to the project directory (activate environment if you are using one) and run this command again</small>
+
+```bash
+~$ celery -A your_project_name worker -l info
+```
+
+##### Create a View in your App
+
+```python
+# app_name/views.py
+from django.http import HttpResponse
+from app_name.tasks import my_first_task, test_func, adding
+
+def index(request):
+    my_first_task.delay(10)
+    result = adding.delay(x=4, y=5)
+    return HttpResponse(f'response done. {result}')
+
+def test(request):
+    test_func.delay()
+    return HttpResponse("Done")
+```
+
+##### Then call the view from your app URL
+
+```python
+# app_name/urls.py
+from django.urls import path
+from app_name.views import index, test
+urlpatterns = [
+    path('celery-index/',index, name='celery_index_url'),
+    path('celery-test/',test, name='celery_test_url'),
+]
+```
+
+### Celery In Production Using Supervisor on Linux Server Step by Step:
+
+#### Step 1: Install Supervisor on Ubuntu Server
+
+```bash
+~$ sudo apt-get install supervisor
+```
+
+#### Step 2: Add .conf File in Supervisor
+
+```bash
+~$ sudo nano /etc/supervisor/conf.d/app_name.conf
+```
+
+> app_name can be anything you like, it should be similar to your project name.
+
+#### Step 3: Add some Configure in app_name.conf
+
+```bash
+[program:your_app_name]
+command=/path/to/env/bin/celery worker -A your_project_name --loglevel=INFO
+directory=/path/to/workflow/your_project_name/
+user=www-data
+autostart=true
+autorestart=true
+stdout_logfile=/path/to/workflow/your_project_name/logs/celeryd.log
+redirect_stderr=true
+```
+
+> let's describe the configure file:
+
+```bash
+[program:your_app_name]
+#The name of your supervisord program
+
+command=/path/to/env/bin/celery worker -A your_project_name --loglevel=INFO
+#Set full path to celery program if using virtualenv
+
+directory=/path/to/workflow/your_project_name/
+#The directory to your Django project
+
+user=www-data
+#The web server has to be run under a specific user. That user must exist.
+
+autostart=true
+#If true, this program will start automatically when supervisord is started
+
+autorestart=true
+#May be one of false, unexpected, or true. If false, the process will never be autorestarted. If unexpected, the process will be restart when the program exits with an exit code that is not one of the exit codes associated with this process’ configuration (see exitcodes). If true, the process will be unconditionally restarted when it exits, without regard to its exit code.
+
+stdout_logfile=/path/to/workflow/your_project_name/logs/celeryd.log
+#Put process stdout output in this file
+
+redirect_stderr=true
+#If true, cause the process’ stderr output to be sent back to supervisord on its stdout file descriptor (in UNIX shell terms, this is the equivalent of executing /the/program 2>&1).
+```
+
+#### Step 4: Inform Configuration to the Server
+
+<small>After adding a new program, we should run the following two commands, to inform the server to reread the configuration files and to apply any changes.</small>
+
+```python
+~$ sudo supervisorctl reread
+~$ sudo supervisorctl update
+```
+
+#### Managing Supervisor App
+
+```bash
+~$ sudo supervisorctl
+```
+
+<small>You will be greeted with a list of the registered processes. You will see a process called `your_app_name` with a `RUNNING` status.</small>
+
+```bash
+your_app_name                 RUNNING   pid 6853, uptime 0:22:30
+supervisor>
+```
+
+<small>Type `help` for a list of available commands.</small>
+
+```bash
+supervisor> help
+default commands (type help <topic>):
+=====================================
+add    exit      open  reload  restart   start   tail
+avail  fg        pid   remove  shutdown  status  update
+clear  maintail  quit  reread  signal    stop    version
+```
+
+<small>In a nutshell, we can `start`, `stop` and `restart` programs bypassing the program name as an argument to the respective command.
+We can also take a look at the program output with the `tail` command.
+Once you are finished, you can `quit`.</small>
+
+```bash
+~$ supervisor> quit
 ```
