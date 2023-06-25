@@ -280,7 +280,7 @@ urlpatterns = [
 from django.urls import path
 from app_name import views
 
-url patterns = [
+urlpatterns = [
     path('posts', views.index, name='posts.index'),
     path('posts/create/', views.create, name='posts.create',
     path('posts/<int:id>/', views.show, name='posts.show'),
@@ -933,7 +933,6 @@ AUTH_USER_MODEL = 'accounts.User'
 from django.db import models
 from django.contrib.auth.models import BaseUserManager, AbstractBaseUser, PermissionsMixin
 
-
 class UserManager(BaseUserManager):
     def create_user(self, username, email, password=None, **extra_fields):
         if not username:
@@ -951,14 +950,14 @@ class UserManager(BaseUserManager):
         extra_fields.setdefault('is_superuser', True)
         extra_fields.setdefault('is_active', True)
 
-        user = self.create_user(email, password=password, **extra_fields)
+        user = self.create_user(username, email, password=password, **extra_fields)
         user.save(using=self._db)
         return user
 
 
 class User(AbstractBaseUser, PermissionsMixin):
     username = models.CharField(verbose_name='Username', max_length=255, unique=True)
-    email = models.EmailField(verbose_name='username', 'email', max_length=255, unique=True)
+    email = models.EmailField(verbose_name='email', max_length=255, unique=True)
     phone = models.BigIntegerField(verbose_name='Phone Number', unique=True, blank=True, null=True)
     is_active = models.BooleanField(default=True, verbose_name="is_active")
     is_staff = models.BooleanField(default=False, verbose_name="is_staff")
@@ -967,7 +966,7 @@ class User(AbstractBaseUser, PermissionsMixin):
     objects = UserManager()
 
     # We can use any field for username
-    USERNAME_FIELD = 'username' # or 'email' or 'phone'
+    USERNAME_FIELD = 'username'  # or 'email' or 'phone'
     REQUIRED_FIELDS = ['username', 'email']
 
     def __str__(self):
