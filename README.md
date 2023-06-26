@@ -1,5 +1,30 @@
 # Django Cheat Sheet
 
+- [Getting started](#getting-started)
+- [Project Config](#project-config)
+- [Create Data Model](#create-data-model)
+- [Admin Panel](#admin-panel)
+- [Routing](#routing)
+- [Static Route & Customize Admin Panel](#static-route-and-customize-admin-panel)
+- [Function Based Views](#function-based-views)
+- [Class Based Views](#class-based-views)
+- [Django Template](#django-template)
+- [Create custom template tags and filters](#create-custom-template-tags-and-filters)
+- [Creating custom Context Processor](#creating-custom-context-processor)
+- [Model Managers and Querysets](#model-managers-and-querysets)
+- [Form (forms.py)](#form)
+- [Flash Mssages](#flash-messages)
+- [User Model (pre-created)](#user-model)
+- [Authentication Configure](#authentication-configure)
+- [Create Custom Accounts Model](#create-custom-accounts-model)
+- [Send Email](#send-email)
+- [Signals](#signals)
+- [Seed](#seed)
+- [Environment Variables](#environment-variables)
+- [Asynchronous Task with Django Celery Redis](#asynchronous-task-with-django-celery-redis)
+
+## Getting started
+
 #### Start a new Django project
 
 ```python
@@ -89,7 +114,7 @@
 ~$ django-admin compilemessages
 ```
 
-##### Project config
+## Project config
 
 ```python
 # Add app to settings.py
@@ -176,7 +201,7 @@ SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
 ```
 
-#### Create data model:
+## Create Data Model:
 
 <small>Theses models can be created as database tables with the migrations commands</small>
 
@@ -238,7 +263,7 @@ def save(self, (*args, **kwargs):
     super().save(*args, **kwargs)
 ```
 
-#### Admin panel:
+## Admin Panel:
 
 <small>Every Django projects come with an Admin Panel that can be open at /admin url (ex: localhost:8000/admin)<br>
 To display the model in the Admin panel register the model in the app_name/admin.py file<br>
@@ -259,7 +284,7 @@ class BlogAdmin(admin.ModelAdmin)
     list_filter =("title",) # define list filters that appear in the right sidebar
 ```
 
-#### Routing:
+## Routing:
 
 <small>Django routing info is store in project_folder/urls.py file</small>
 
@@ -290,7 +315,9 @@ urlpatterns = [
 ]
 ```
 
-#### Static route & Customize Admin Panel Header and Title & Custom 404,500,503 Template
+## Static Route and Customize Admin Panel
+
+<small>Header and Title admin panel & Custom 404,500,503 Template</small>
 
 ```python
 # add in project/urls.py
@@ -315,7 +342,7 @@ handler500 = 'app_name.views.handler500'
 handler503 = 'app_name.views.handler503'
 ```
 
-#### Function Based Views
+## Function Based Views
 
 ```python
 # views.py
@@ -364,7 +391,7 @@ def status(request, id, state):
     return redirect('appfolder/status.html', {'post': post})
 ```
 
-#### Class based Views
+## Class Based Views
 
 ```python
 from django.views.generic import TemplateView, ListView, DetailView,
@@ -431,7 +458,7 @@ class PostsDeleteView(DeleteView):
 path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
 ```
 
-#### Django Template:
+## Django Template
 
 <small>Templates are store in project_folder/templates or in your app_folder/templates/app_name/\*.html</small>
 
@@ -478,7 +505,7 @@ Use static in template:
 {% static 'css/main.css' %}
 ```
 
-#### Create custom template tags and filters:
+## Create custom template tags and filters
 
 <small>For example, if your custom tags/filters are in a file called `basetags.py`, your app layout might look like this:</small>
 
@@ -532,7 +559,7 @@ def lower(value): # Only one argument.
 {{ somevariable | cut:"0" }}
 ```
 
-#### Creating custom Context Processor
+## Creating custom Context Processor
 
 <small>1. Anywhere, create a context_processors.py file</small>
 
@@ -568,7 +595,7 @@ def site_email(request):
 # Now be able to access the 'site_email' template variable on every single django template across your whole site.
 ```
 
-#### Model Managers and Querysets:
+## Model Managers and Querysets
 
 <small>Model manager allow model database reads and writes</small>
 
@@ -649,9 +676,12 @@ article1.tags.all()
 tag1.articles_set.all()
 ```
 
-#### Form (forms.py)
+## Form
+
+<small>In HTML, a form is a collection of elements inside `<form>...</form>` that allow a visitor to do things like enter text, select options, manipulate objects or controls, and so on, and then send that information back to the server.</small>
 
 ```python
+# app_name/forms.py
 from django import forms
 class ArticleForm(forms.Form):
     name = forms.Charfield(max_length=100)
@@ -724,7 +754,7 @@ def clean(self):
         raise ValidationError('Your name must not be Mike Taylor')
 ```
 
-#### Flash messages
+## Flash messages
 
 ```python
 messages.success(request, 'Login successful')
@@ -740,7 +770,9 @@ messages.error(request, 'Login error')
         {% message.tags %}
 ```
 
-#### User model (pre-created)
+## User Model
+
+<small>User Model (pre-created)</small>
 
 ```python
 # Get a reference to Django pre-created User model
@@ -757,7 +789,9 @@ class User(AbstractUser):
 # To make Django use that model go to settings.py and add: AUTH_USER_MODEL = 'app_name.User'
 ```
 
-#### Authentification: LoginView
+## Authentication Configure
+
+#### Authentication : LoginView
 
 ```python
 # LoginView is already pre-created by Django
@@ -783,7 +817,7 @@ path('login/', LoginView.as_view(), name='login')
 # If successful il will then login the user and redirect to LOGIN_REDIRECT_URL specified in your settings.py
 ```
 
-#### Authentification: LogoutView
+#### Authentication : LogoutView
 
 ```python
 # LogoutView is already pre-created by Django
@@ -798,7 +832,7 @@ path('logout/', LoginView.as_view(), name='logout')
 # After link is execute, the user will be logout and redirect to LOGOUT_REDIRECT_URL specified in your settings.py
 ```
 
-#### Authentification: SignupView
+#### Authentication : SignupView
 
 ```python
 # Create a SignupView (that view is not created by default)
@@ -842,7 +876,7 @@ class CustomUserCreationForm(UserCreattionForm):
         fields_classes = {'username': UsernameField}
 ```
 
-#### Optional pre-created authentification routes
+#### Optional pre-created Authentication routes
 
 ```python
 # urls.py
@@ -850,7 +884,7 @@ urlpatterns += path('', include('django.contrib.auth.urls'))
 # /login, /lougout, /signup, etc.
 ```
 
-#### Template Authentification helpers
+#### Template Authentication helpers
 
 ```python
 # Authentication links
@@ -883,7 +917,7 @@ def search_page(request):
     ...
 ```
 
-#### Manual Authentification, Login and Logout
+#### Manual Authentication , Login and Logout
 
 ```python
 from django.contrib.auth import authenticate, login
@@ -1239,7 +1273,7 @@ def LogoutPage(request):
     return redirect('app_name:home')
 ```
 
-#### Send Email
+## Send Email
 
 ```python
 # settings.py
@@ -1256,7 +1290,7 @@ send_mail(
 )
 ```
 
-#### Signals
+## Signals
 
 ```python
 # models.py
@@ -1270,7 +1304,7 @@ def post_user_created_signal(sender, instance, created, **kwargs):
 post_save.connect(post_user_created_signal, sender=User)
 ```
 
-#### Seed
+## Seed
 
 ```python
 from app_name.models import Product, Category
@@ -1302,6 +1336,8 @@ def seed(request):
 
     return HttpResponse('Seeded')
 ```
+
+## Environment Variables
 
 #### .env key/value file
 
