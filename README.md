@@ -1,5 +1,7 @@
 # Django Cheat Sheet
 
+### Contents
+
 - [Getting started](#getting-started)
 - [Project Config](#project-config)
 - [Create Data Model](#create-data-model)
