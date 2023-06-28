@@ -2,7 +2,7 @@
 
 ### Contents
 
-- [Getting started](#getting-started)
+- [Start New Django Project](#start-a-new-django-project)
 - [Project Config](#project-config)
 - [Create Data Model](#create-data-model)
 - [Admin Panel](#admin-panel)
@@ -25,9 +25,7 @@
 - [Environment Variables](#environment-variables)
 - [Asynchronous Task with Django Celery Redis](#asynchronous-task-with-django-celery-redis)
 
-## Getting started
-
-#### Start a new Django project
+#### Start a New Django Project
 
 ```python
 # Create et access project folder
