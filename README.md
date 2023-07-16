@@ -11,6 +11,7 @@
 - [Function Based Views](#function-based-views)
 - [Class Based Views](#class-based-views)
 - [Django Template](#django-template)
+- [Define the variable in the template](#define-the-variable-in-the-template)
 - [Create custom template tags and filters](#create-custom-template-tags-and-filters)
 - [Creating custom Context Processor](#creating-custom-context-processor)
 - [Model Managers and Querysets](#model-managers-and-querysets)
@@ -502,6 +503,15 @@ URL by name with param
 Use static in template:
 {% load static %}
 {% static 'css/main.css' %}
+```
+
+## Define the variable in the template
+
+```python
+{% set name="World" %}
+<html>
+<div>Hello {{ name }}!</div>
+</html>
 ```
 
 ## Create custom template tags and filters
