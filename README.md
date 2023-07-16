@@ -508,10 +508,11 @@ Use static in template:
 ## Define the variable in the template
 
 ```python
-{% set name="World" %}
+{% with name="World" %}
 <html>
 <div>Hello {{ name }}!</div>
 </html>
+{% endwith %}
 ```
 
 ## Create custom template tags and filters
