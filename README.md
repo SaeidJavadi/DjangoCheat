@@ -11,7 +11,6 @@
 - [Function Based Views](#function-based-views)
 - [Class Based Views](#class-based-views)
 - [Django Template](#django-template)
-- [Define the variable in the template](#define-the-variable-in-the-template)
 - [Create custom template tags and filters](#create-custom-template-tags-and-filters)
 - [Creating custom Context Processor](#creating-custom-context-processor)
 - [Model Managers and Querysets](#model-managers-and-querysets)
@@ -485,29 +484,27 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
   <p>The product name is {{ product }}<p>
 {% endfor %}
 
+# Access to the variable in the template
 {{ var_name }}
 
-Template variables formating
+# Template variables formating
 {{ title | lower }}
 {{ blog.post | truncatwords:50 }}
 {{ order.date | date:"D M Y" }}
 {{ list_items | slice:":3" }}
 {{ total | default:"nil" }}
 
-Current path (ex. posts/1/show)
+# Current path (ex. posts/1/show)
 {{ request.path }}
 
-URL by name with param
+# URL by name with param
 {% url 'posts.delete' id=post.id %}
 
-Use static in template:
+# Use static in template:
 {% load static %}
 {% static 'css/main.css' %}
-```
 
-## Define the variable in the template
-
-```python
+# Define the variable in the template
 {% with name="World" %}
 <html>
 <div>Hello {{ name }}!</div>
@@ -565,8 +562,18 @@ def lower(value): # Only one argument.
     """Converts a string into all lowercase"""
     return value.lower()
 
+
+@register.simple_tag
+def to_class_name(object):
+    return str(object.__class__.__name__)
+
+# Template
 # And here’s an example of how that filter would be used in Template:
 {{ somevariable | cut:"0" }}
+
+# Put the result of simple tag into a variable
+{% to_class_name object as objectmodel %}
+<p>Model Class Name: {{ objectmodel }}</p>
 ```
 
 ## Creating custom Context Processor
