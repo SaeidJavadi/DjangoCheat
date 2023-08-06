@@ -5,6 +5,7 @@
 - [Start New Django Project](#start-a-new-django-project)
 - [Project Config](#project-config)
 - [Create Data Model](#create-data-model)
+- [Field Lookups](#field-lookups)
 - [Admin Panel](#admin-panel)
 - [Routing](#routing)
 - [Static Route & Customize Admin Panel](#static-route-and-customize-admin-panel)
@@ -261,6 +262,65 @@ def save(self, (*args, **kwargs):
         self.slug = slugify(self.title)
     super().save(*args, **kwargs)
 ```
+
+## Field Lookups
+
+<small>In Django, the `field__lookuptype` syntax is used to perform lookups on fields in queries. The `field` represents the name of the field you want to perform the lookup on, and `lookuptype` represents the type of lookup you want to perform.
+
+For example, let's say you have a model called `Book` with a field called `title` . You can use the `field__lookuptype` syntax to perform different types of lookups on the `title` field.
+
+Here are a few examples:</small>
+
+```python
+
+# 1. Exact Match Lookup:
+Book.objects.filter(title__exact='Python Tricks')
+# 2. Case-insensitive Lookup:
+Book.objects.filter(title__iexact='python tricks')
+# 3. Contains Lookup:
+Book.objects.filter(title__contains='Python')
+# 4. Startswith Lookup:
+Book.objects.filter(title__startswith='Python')
+# 5. Endswith Lookup:
+Book.objects.filter(title__endswith='Tricks')
+```
+
+### Field Lookups Reference
+
+<small>A list of all field look up keywords:</small>
+
+| **Keyword**  | **Description**                                  |
+| ------------ | ------------------------------------------------ |
+| contains     | Contains the phrase                              |
+| icontains    | Same as contains, but case-insensitive           |
+| date         | Matches a date                                   |
+| day          | Matches a date (day of month, 1-31) (for dates)  |
+| endswith     | Ends with                                        |
+| iendswith    | Same as endswidth, but case-insensitive          |
+| exact        | An exact match                                   |
+| iexact       | Same as exact, but case-insensitive              |
+| in           | Matches one of the values                        |
+| isnull       | Matches NULL values                              |
+| gt           | Greater than                                     |
+| gte          | Greater than, or equal to                        |
+| hour         | Matches an hour (for datetimes)                  |
+| lt           | Less than                                        |
+| lte          | Less than, or equal to                           |
+| minute       | Matches a minute (for datetimes)                 |
+| month        | Matches a month (for dates)                      |
+| quarter      | Matches a quarter of the year (1-4) (for dates)  |
+| range        | Match between                                    |
+| regex        | Matches a regular expression                     |
+| iregex       | Same as regex, but case-insensitive              |
+| second       | Matches a second (for datetimes)                 |
+| startswith   | Starts with                                      |
+| istartswith  | Same as startswith, but case-insensitive         |
+| time         | Matches a time (for datetimes)                   |
+| week         | Matches a week number (1-53) (for dates)         |
+| week_day     | Matches a day of week (1-7) 1 is Sunday          |
+| iso_week_day | Matches a ISO 8601 day of week (1-7) 1 is Monday |
+| year         | Matches a year (for dates)                       |
+| iso_year     | Matches an ISO 8601 year (for dates)             |
 
 ## Admin Panel:
 
