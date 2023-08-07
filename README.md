@@ -1419,19 +1419,7 @@ def seed(request):
 #### .env key/value file
 
 ```python
-$ pip install django-dotenv
-```
-
-##### add code to manage.py file
-
-```python
-import dotenv
-
-def main():
-    """Run administrative tasks."""
-    dotenv.read_dotenv() #add this line
-    ...
-    ...
+$ pip install python-decouple
 ```
 
 ##### Create a file name '.env' in the root folder of your project
@@ -1444,9 +1432,10 @@ ALLOWED_HOST = 127.0.0.1
 ##### In settings.py change security related settings to point to the .env file
 
 ```python
-import os
-SECRET_KEY = os.environ.get('SECRET_KEY')
-ALLOWED_HOSTS = os.environ.get('ALLOWED_HOSTS')
+from decouple import config
+
+SECRET_KEY = config('SECRET_KEY')
+ALLOWED_HOST = config('ALLOWED_HOST')
 ```
 
 ## Asynchronous Task with Django Celery Redis
