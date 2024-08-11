@@ -540,7 +540,10 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
 {% endif %}
 
 {% for product in products %}
-  <p>product number: {{ forloop.counter0 }}<p>
+  <p> row: 
+      {{ forloop.counter }} # starting index 1
+      {{ forloop.counter0 }} # starting index 0
+  </p>
   <p>The product name is {{ product }}<p>
 {% endfor %}
 
