@@ -117,6 +117,14 @@
 
 ## Project config
 
+### Configuration settings
+##### Project base templates directory and Apps templates directory:
+ - create folder project/templates
+ - create folder appfolder/templates/appname
+##### Create Static folder in base root and separate for apps:
+- project_name\static\root
+- app_name\static\app_name
+
 ```python
 # Add app to settings.py
 INSTALLED_APPS = [
@@ -124,21 +132,12 @@ INSTALLED_APPS = [
          'app_name.apps.App_nameConfig',
  ]
 
-# App templates folder
-create folder appfolder/templates/appname
-
-# Project templates folder:
-create folder projectname/templates
-
-# settings.py template config
+# template directory config
 Project templates settings.py:
     TEMPLATES = [
         { …
            'DIRS': [BASE_DIR / 'templates'],
         … }
-
-# Create Static folder:
-project_name\static\
 
 # Static folder (settings.py):
 STATIC_URL = '/static/'
