@@ -540,7 +540,7 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
 {% endif %}
 
 {% for product in products %}
-  <p> row: 
+  <p> row:
       {{ forloop.counter }} # starting index 1
       {{ forloop.counter0 }} # starting index 0
   </p>
@@ -573,6 +573,47 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
 <div>Hello {{ name }}!</div>
 </html>
 {% endwith %}
+
+# Define the list in the template
+<input type="number"
+{% if product.unit in 'kg,milligram,milliliter' %}
+    step="0.01"
+{% else %}
+    step="1"
+{% endif %}>
+
+# Safely Pass Data to JavaScript in a Django Template:
+#+ Use data attributes for simple values
+<script data-username="{{ username }}">
+    const data = document.currentScript.dataset;
+    const username = data.username;
+</script>
+
+#+ Separate script files: can use document.currentScript for separate script files
+<script src="{% static 'index.js' %}" data-username="{{ username }}"></script>
+
+#+ Case conversion
+<script src="{% static 'index.js' %}" data-full-name="{{ full_name }}"></script>
+# Read it in JavaScript as fullName:
+const data = document.currentScript.dataset;
+const fullName = data.fullName;
+
+#+ Non-string types
+<script src="{% static 'index.js' %}" data-follower-count="{{ follower_count }}"></script>
+# parseInt() to convert this value from a string:
+const data = document.currentScript.dataset;
+const followerCount = parseInt(data.followerCount, 10);
+
+#+ There’s no limit: A <script> can have as many data attributes as you like:
+<script src="{% static 'index.js' %}"
+        defer
+        data-settings-url="{% url 'settings' %}"
+        data-configuration-url="{% url 'configuration' %}"
+        data-options-url="{% url 'options' %}"
+        data-preferences-url="{% url 'preferences' %}"
+        data-setup-url="{% url 'setup' %}"
+        >
+</script>
 ```
 
 ## Create custom template tags and filters
