@@ -118,10 +118,14 @@
 ## Project config
 
 ### Configuration settings
+
 ##### Project base templates directory and Apps templates directory:
- - create folder project/templates
- - create folder appfolder/templates/appname
+
+- create folder project/templates
+- create folder appfolder/templates/appname
+
 ##### Create Static folder in base root and separate for apps:
+
 - project_name\static\root
 - app_name\static\app_name
 
