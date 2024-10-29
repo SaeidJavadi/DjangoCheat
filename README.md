@@ -522,15 +522,20 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
 <small>Templates are store in project_folder/templates or in your app_folder/templates/app_name/\*.html</small>
 
 ```python
+# Extend from another template
+# can use the same parts of your HTML for different template
 {% extends 'base.html' %}
-{% block content %}
-{% endblock %}
 
+# A part of the parent template that is defined and is replaced by a part in the child template
+{% block contents %}
+{% endblock contents %}
+
+# include template
 {% include 'partials/header.html' %}
-
 # include template with One or More Parameters
 {% include 'body.html' with key1=value1 key2=value2 %}
 
+# If statement in template
 {% if user.username = 'Mike' %}
     <p>Hello Admin</p>
 {% elif user.username = 'john' %}
@@ -539,12 +544,14 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
     <p>Hello User</p>
 {% endif %}
 
+# for loop in template
 {% for product in products %}
   <p> row:
       {{ forloop.counter }} # starting index 1
       {{ forloop.counter0 }} # starting index 0
   </p>
-  <p>The product name is {{ product }}<p>
+  <p>The product name is {{ product.name }}<p>
+  <p>The product name is {{ product.price }}<p>
 {% endfor %}
 
 # Access to the variable in the template
@@ -573,6 +580,12 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
 <div>Hello {{ name }}!</div>
 </html>
 {% endwith %}
+
+# Template translate text
+{% load i18n %}
+<title>{% trans "This is the title." %}</title>
+# Use variable translate in the template
+<title>{% trans object.title %}</title>
 
 # Define the list in the template
 <input type="number"
