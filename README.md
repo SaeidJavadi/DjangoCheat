@@ -143,11 +143,11 @@ Project templates settings.py:
            'DIRS': [BASE_DIR / 'templates'],
         … }
 
-# Static folder (settings.py):
+# Static folder:
 STATIC_URL = '/static/'
 STATICFILES_DIRS = [ BASE_DIR / 'static' ]
 STATIC_ROOT = 'static_root'
-# Media folder (settings.py):
+# Media folder:
 MEDIA_URL = '/media/'
 STATICFILES_DIRS = (
     (BASE_DIR / 'static'),
