@@ -202,6 +202,13 @@ SECURE_SSL_REDIRECT = True
 # cookies will only be sent via HTTPS connections
 SESSION_COOKIE_SECURE = True
 CSRF_COOKIE_SECURE = True
+
+# Customize Admin Panel Header & Title
+from django.contrib.admin import AdminSite
+
+AdminSite.site_header = _('Administrator Control Panel')
+AdminSite.site_title = _('Administrator Control Panel')
+AdminSite.index_title = _('Wellcome to Control Panel')
 ```
 
 ## Create Data Model:
@@ -383,7 +390,6 @@ urlpatterns = [
 
 ```python
 # add in project/urls.py
-from django.contrib import admin
 from django.conf import settings
 from django.conf.urls.static import static
 
@@ -392,11 +398,6 @@ urlpatterns = [  ...  ]
 if settings.DEBUG == True:
     urlpatterns += static(settings.STATIC_URL, document_root=settings.STATIC_ROOT)
     urlpatterns += static(settings.MEDIA_URL, document_root=settings.MEDIA_ROOT)
-
-# Customize Admin Panel Header & Title
-admin.site.site_header = _('Administrator Control Panel')
-admin.site.site_title = _('Administrator Control Panel')
-admin.site.index_title = _('Wellcome to Control Panel')
 
 # Costomize 404 Template page
 handler404 = 'app_name.views.handler404'
