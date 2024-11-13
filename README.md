@@ -860,14 +860,20 @@ class ArticleForm(ModelForm):
 {% load crispy_forms_tags %}
 {{ form|crispy }}
 {{ form.email|as_crispy_field }}
+```
 
+```bash
 # crispy-tailwind
 pip install crispy-tailwind
+```
 
+```python
 # settings.py
 CRISPY_ALLOWED_TEMPLATE_PACKS = 'tailwind'
 CRISPY_TEMPLATE_PACK = 'tailwind'
+```
 
+```django
 # template usage
 {% load tailwind_filters %}
 {{ form|crispy}}
