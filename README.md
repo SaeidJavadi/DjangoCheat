@@ -526,7 +526,7 @@ path('<int:pk>/update/', PostsUpdateView.as_view(), name='post-update')
 
 <small>Templates are store in project_folder/templates or in your app_folder/templates/app_name/\*.html</small>
 
-```python
+```django
 # Extend from another template
 # can use the same parts of your HTML for different template
 {% extends 'base.html' %}
@@ -846,8 +846,9 @@ class ArticleForm(ModelForm):
         help_texts = {
         'name': 'Enter Your First Name',
         }
+```
 
-
+```django
 # Render form in template
 <form method=“post” action=“” novalidate>
     {% csrf_token %}
@@ -907,6 +908,8 @@ messages.error(request, 'Login error')
     {% for message in messages %}
         {% message %}
         {% message.tags %}
+    {% endfor %}
+{% endif %}
 ```
 
 ## User Model
@@ -940,7 +943,9 @@ from django.contrib.auth.views import LoginView
 path('login/', LoginView.as_view(), name='login')
 
 # By default the LoginView will try to open a template name 'registration/login.html' and send a login form with it.
+```
 
+```django
 # Create a template under registration/login.html
 {% extends "base.html" %}
 {% block content %}
@@ -985,8 +990,9 @@ class SignupView(CreateView):
 
     def get_success_url(self):
         return reverse("login")
+```
 
-
+```django
 # Create template: registration/signup.html
 {% extends "base.html" %}
 {% block content %}
@@ -996,7 +1002,9 @@ class SignupView(CreateView):
         <button type="submit">Signup</button>
     </form>
 {% endblock content %}
+```
 
+```python
 # Add a url to reach that view
 from posts.views import SignupView
 
@@ -1025,7 +1033,7 @@ urlpatterns += path('', include('django.contrib.auth.urls'))
 
 #### Template Authentication helpers
 
-```python
+```django
 # Authentication links
 <a href="{% url 'login' %}">Login</a>
 <a href="{% url 'signup' %}">Signup</a>
@@ -1973,6 +1981,7 @@ WantedBy=sockets.target
 ```bash
 sudo nano /etc/systemd/system/gunicorn.service
 ```
+
 ```bash
 [Unit]
 Description=gunicorn daemon
@@ -1992,43 +2001,61 @@ ExecStart=/home/sammy/myprojectdir/myprojectenv/bin/gunicorn \
 [Install]
 WantedBy=multi-user.target
 ```
+
 - You can now start and enable the Gunicorn socket. This will create the socket file at /run/gunicorn.sock now and at boot. When a connection is made to that socket, systemd will automatically start the gunicorn.service to handle it
+
 ```bash
 sudo systemctl start gunicorn.socket
 sudo systemctl enable gunicorn.socket
 ```
+
 #### Step 8 — Checking for the Gunicorn Socket File
+
 - Check the status of the process to find out whether it was able to start:
 
 ```bash
 sudo systemctl status gunicorn.socket
 ```
+
 - Next, check for the existence of the gunicorn.sock file within the /run directory:
+
 ```bash
 file /run/gunicorn.sock
 ```
+
 #### Step 9 — Testing Socket Activation
+
 ```bash
 sudo systemctl status gunicorn
 ```
+
 - To test the socket activation mechanism, you can send a connection to the socket through curl by typing:
+
 ```bash
 curl --unix-socket /run/gunicorn.sock localhost
 ```
+
 - You should receive the HTML output from your application in the terminal. This indicates that Gunicorn was started and was able to serve your Django application. You can verify that the Gunicorn service is running by typing:
+
 ```bash
 sudo systemctl status gunicorn
 ```
+
 - Check your /etc/systemd/system/gunicorn.service file for problems. If you make changes to the /etc/systemd/system/gunicorn.service file, reload the daemon to reread the service definition and restart the Gunicorn process by typing
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl restart gunicorn
 ```
+
 #### Step 10 — Configure Nginx to Proxy Pass to Gunicorn
+
 - Start by creating and opening a new server block in Nginx’s sites-available directory:
+
 ```bash
 sudo nano /etc/nginx/sites-available/myproject
 ```
+
 ```bash
 server {
     listen 80;
@@ -2050,43 +2077,63 @@ server {
     }
 }
 ```
+
 - Save and close the file when you are finished. Now, you can enable the file by linking it to the sites-enabled directory:
+
 ```bash
 sudo ln -s /etc/nginx/sites-available/myproject /etc/nginx/sites-enabled
 ```
+
 - Test your Nginx configuration for syntax errors by typing:
+
 ```bash
 sudo nginx -t
 ```
+
 - If no errors are reported, go ahead and restart Nginx by typing:
+
 ```bash
 sudo systemctl restart nginx
 ```
+
 - you need to open up your firewall to normal traffic on port 80
+
 ```bash
 sudo ufw allow 'Nginx Full'
 ```
+
 You should now be able to go to your server’s domain or IP address to view your application.
+
 #### Step 11 — Troubleshooting Nginx and Gunicorn
+
 - Nginx Is Showing the Default Page Instead of the Django Application
+
 ```bash
 sudo tail -F /var/log/nginx/error.log
 ```
+
 - Django Is Displaying: “could not connect to server: Connection refused”
+
 ```bash
 sudo systemctl status postgresql
 ```
+
 - If it is not, you can start it and enable it to start automatically at boot (if it is not already configured to do so) by typing:
+
 ```bash
 sudo systemctl start postgresql
 sudo systemctl enable postgresql
 ```
+
 If you change Gunicorn socket or service files, reload the daemon and restart the process by typing:
+
 ```bash
 sudo systemctl daemon-reload
 sudo systemctl restart gunicorn.socket gunicorn.service
 ```
+
 If you change the Nginx server block configuration, test the configuration and then Nginx by typing:
+
 ```bash
 sudo nginx -t && sudo systemctl restart nginx
 ```
