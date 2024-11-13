@@ -1102,7 +1102,8 @@ user.set_password('raw password')
 ```python
 # Add accounts app to settings.py
 INSTALLED_APPS = [ … ,
-         'accounts.apps.AccountsConfi', ]
+         'accounts.apps.AccountsConfig',
+          ]
 .
 .
 .
