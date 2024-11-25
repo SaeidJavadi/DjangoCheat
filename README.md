@@ -884,15 +884,21 @@ class ArticleForm(ModelForm):
     {{ form }}
     <button type="submit">Submit</button>
 </form>
-
-# Bootstrap (pip install django-crispy-forms + installed_apps: 'crispy_forms')
-{% load crispy_forms_tags %}
-{{ form|crispy }}
-{{ form.email|as_crispy_field }}
 ```
 
+- NOTE: If the form contains a file field, your form MUST contain `enctype="multipart/form-data"`, eg:
+
+```django
+<form action="" method="post" enctype="multipart/form-data">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit">{% trans 'Submit' %}</button>
+</form>
+```
+
+##### A Tailwind CSS template pack for the wonderful django-crispy-forms.
+
 ```bash
-# crispy-tailwind
 pip install crispy-tailwind
 ```
 
