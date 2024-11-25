@@ -234,9 +234,9 @@ class Customer(models.Model)
     img = models.ImageField(upload_to ='uploads/')
     # Select Field (return value, display value)
     TYPE_CHOICES = (
-        ('Customer', 'Customer'),
-        ('Supplier', 'Supplier'),
-        ('Student', 'Student'),
+        ('Customer', _('Customer')),
+        ('Supplier', _('Supplier')),
+        ('Student', _('Student')),
     )
     type = models.CharField(choices=TYPE_CHOICES)
 
@@ -244,12 +244,40 @@ class Customer(models.Model)
         verbose_name = "Customer"
         verbose_name_plural = "Customers"
 
-    def __str__(self):   # Model string representation
+    # Model string representation
+    def __str__(self):
         return self.name
 
     # the URL that points to a resource or page on your website
     def get_absolute_url(self):
         return reverse("customer_detail", kwargs={"pk": self.pk})
+```
+
+#### We can also use this method to define the ChoiceField value.
+
+```python
+  class Customer(models.Model)
+    class TypeList(models.IntegerChoices):
+        customer = 1, _('Customer'))
+        supplier = 2, _('Supplier'))
+        student = 3, _('Student'))
+    .
+    .
+    .
+    type = models.CharField(choices=TypeList.choices, default=1)
+```
+
+#### To access the ChoiceField value in the template, we need to do the following in the template:
+
+- In Django templates you can use the "`get_FOO_display()`" method, that will return the readable alias for the field, where `'FOO'` is the name of the field.
+- If the choices are stored in the variable `CHOICES` and the model field storing the selected choice is `'type'` then you can directly use
+
+```html
+<!-- Here, X is the model instance -->
+{{ X.get_type_display }}
+
+<!-- You can even use this method to display its translation. -->
+{% trans X.get_type_display %}
 ```
 
 #### Relationship between models
@@ -426,7 +454,8 @@ def show(request, id):
     return render(request, 'appfolder/show.html', {'post': post})
 
 def create(request):
-    form = PostForm(request.POST or None)
+    form = PostForm(request.POST or None, request.FILES or None)
+    # When the form contains an image or file field, we should use request.FILES
     if form.is_valid():
         # optionally we can access form data with form.cleaned_data['first_name']
         post = form.save(commit=False)
@@ -438,7 +467,7 @@ def create(request):
 
 def edit(request, id):
     post = Post.objects.get(id=id)
-    form = PostForm(request.POST or None, instance=post)
+    form = PostForm(request.POST or None, request.FILES or None, instance=post)
     if form.is_valid():
         form.save()
         return redirect('/posts')
